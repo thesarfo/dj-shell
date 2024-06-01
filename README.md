@@ -31,3 +31,5 @@ These are very simple powershell scripts to kickstart your django project.
      ```powershell
      .\drf-user_model.ps1 C:\Projects\MyDjangoProject
      ```
+
+Finally, you need to run `python manage.py createsuperuser` before running the server.
