@@ -154,3 +154,109 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+'@ | Out-File -FilePath .\config\settings.py -Encoding utf8
+
+@'
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
+from .forms import ApplicationUserCreationForm, ApplicationUserChangeForm
+from .models import ApplicationUser
+
+
+@admin.register(ApplicationUser)
+class ApplicationUserAdmin(UserAdmin):
+    add_form = ApplicationUserCreationForm
+    form = ApplicationUserChangeForm
+    model = ApplicationUser
+    list_display = ('email', 'is_staff', 'is_active',)
+    list_filter = ('email', 'is_staff', 'is_active',)
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'groups', 'user_permissions')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'email', 'password1', 'password2', 'is_staff',
+                'is_active', 'groups', 'user_permissions'
+            )}
+        ),
+    )
+    search_fields = ('email',)
+    ordering = ('email',)
+'@ | Out-File -FilePath .\users\admin.py -Encoding utf8
+
+@'
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+
+from .models import ApplicationUser
+
+
+class ApplicationUserCreationForm(UserCreationForm):
+
+    class Meta:
+        model = ApplicationUser
+        fields = ('email',)
+
+
+class ApplicationUserChangeForm(UserChangeForm):
+
+    class Meta:
+        model = ApplicationUser
+        fields = ('email',)
+'@ | Out-File -FilePath .\users\forms.py -Encoding utf8
+
+@'
+from django.contrib.auth.base_user import BaseUserManager
+from django.utils.translation import gettext_lazy as _
+
+
+class ApplicationUserManager(BaseUserManager):
+    '''
+    Custom user model manager where email is the unique identifiers
+    for authentication instead of usernames.
+    '''
+    def create_user(self, email, password, **extra_fields):
+        '''
+        Create and save a user with the given email and password.
+        '''
+        if not email:
+            raise ValueError(_('The Email must be set'))
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        '''
+        Create and save a SuperUser with the given email and password.
+        '''
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+        return self.create_user(email, password, **extra_fields)
+'@ | Out-File -FilePath .\users\managers.py -Encoding utf8
+
+Write-Output 'Migrations are coming...'
+
+python manage.py makemigrations
+python manage.py migrate
