@@ -364,3 +364,6 @@ urlpatterns = [
 '@ | Out-File -FilePath .\config\urls.py -Encoding utf8
 
 Write-Output 'Migrations are coming...'
+
+python manage.py makemigrations
+python manage.py migrate
